@@ -1,0 +1,31 @@
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+temp.txt
+
+# Log files
+*.log
+
+# Environment files
+.env
+.env.local
+
+# Upload files (keep folder structure but ignore content)
+uploads/*
+!uploads/.gitkeep
+
+# Cache files
+cache/
+*.cache
+
+# Backup files
+*.bak
+*.backup
