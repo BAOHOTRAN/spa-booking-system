@@ -1,0 +1,27 @@
+{
+    "name": "baohotran/spa-booking-system",
+    "description": "SPA Booking System - Full Stack Application",
+    "type": "project",
+    "keywords": ["spa", "booking", "api", "php", "mysql"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "BAOHOTRAN",
+            "email": "tqbao200468@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.4"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.0"
+    },
+    "scripts": {
+        "test": "php -l index.php && echo 'PHP syntax check passed'",
+        "start": "php -S localhost:8000 index.php",
+        "dev": "php -S localhost:8000 index.php"
+    },
+    "config": {
+        "optimize-autoloader": true
+    }
+}

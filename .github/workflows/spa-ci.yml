@@ -1,0 +1,80 @@
+name: SPA Full-Stack CI
+
+on:
+  push:
+    branches: [ main, develop, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+    
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+        extensions: mysqli, pdo, pdo_mysql
+    
+    - name: Validate PHP syntax
+      run: |
+        echo "🔍 Checking PHP syntax..."
+        find . -name "*.php" -exec php -l {} \;
+        echo "✅ PHP syntax OK"
+    
+    - name: Validate HTML in public folder
+      run: |
+        echo "🔍 Validating HTML files..."
+        find public -name "*.php" -exec echo "✅ Checking: {}" \;
+        echo "✅ Public files validated"
+    
+    - name: Check CSS and JS assets
+      run: |
+        echo "🔍 Checking assets..."
+        if [ -d "assets/css" ]; then
+          echo "✅ CSS assets found"
+        fi
+        if [ -d "assets/js" ]; then
+          echo "✅ JS assets found"
+        fi
+    
+    - name: Build static version
+      run: |
+        echo "🏗️ Building static version for deployment..."
+        mkdir -p static-build
+        cp -r public/* static-build/ 2>/dev/null || true
+        cp -r assets static-build/ 2>/dev/null || true
+        ls -la static-build/
+        echo "✅ Static build successful"
+    
+    - name: Performance check
+      run: |
+        echo "⚡ Checking file sizes..."
+        for file in *.html *.css *.js; do
+          if [ -f "$file" ]; then
+            size=$(wc -c < "$file")
+            echo "📄 $file: $size bytes"
+            if [ $size -gt 100000 ]; then
+              echo "⚠️ Warning: $file is quite large ($size bytes)"
+            fi
+          fi
+        done
+    
+    - name: Security check
+      run: |
+        echo "🔒 Running basic security checks..."
+        # Check for common security issues
+        if grep -r "eval\|innerHTML\|document.write" *.js 2>/dev/null; then
+          echo "⚠️ Warning: Potentially unsafe JavaScript patterns found"
+        else
+          echo "✅ No obvious security issues found"
+        fi

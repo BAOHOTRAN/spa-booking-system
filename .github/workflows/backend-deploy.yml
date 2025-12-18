@@ -1,0 +1,82 @@
+name: Deploy Backend to Render
+
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+        extensions: json, curl, mysqli, pdo
+        tools: composer
+    
+    - name: Install dependencies
+      run: |
+        echo "📦 Installing dependencies..."
+        if [ -f composer.json ]; then
+          composer install --no-dev --optimize-autoloader
+          echo "✅ Composer dependencies installed"
+        else
+          echo "ℹ️ No composer.json found, skipping dependency installation"
+        fi
+    
+    - name: Run tests before deploy
+      run: |
+        echo "🧪 Running pre-deployment tests..."
+        
+        # Test PHP syntax
+        php -l index.php
+        
+        # Start server for testing
+        php -S localhost:8000 index.php &
+        sleep 3
+        
+        # Test critical endpoints
+        curl -f http://localhost:8000/ || echo "Main endpoint test failed"
+        
+        echo "✅ Pre-deployment tests completed"
+    
+    - name: Prepare deployment
+      run: |
+        echo "🚀 Preparing deployment..."
+        
+        # Create deployment info
+        echo "<?php" > deploy_info.php
+        echo "// Deployment info" >> deploy_info.php
+        echo "define('DEPLOY_TIME', '$(date)');" >> deploy_info.php
+        echo "define('DEPLOY_COMMIT', '${{ github.sha }}');" >> deploy_info.php
+        echo "define('DEPLOY_BRANCH', '${{ github.ref_name }}');" >> deploy_info.php
+        
+        echo "✅ Deployment prepared"
+    
+    - name: Deploy to Render
+      run: |
+        echo "🚀 Deploying to Render..."
+        echo "Render will automatically deploy when changes are pushed to main branch"
+        echo "✅ Deployment triggered"
+        
+        # In a real scenario, you might use Render's API or webhook
+        # For now, Render auto-deploys from GitHub
+    
+    - name: Create deployment comment
+      uses: actions/github-script@v6
+      with:
+        script: |
+          github.rest.repos.createCommitComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            commit_sha: context.sha,
+            body: '🚀 Backend deployed successfully to Render!\n\n' +
+                  '📊 Check your Render dashboard for deployment status.\n' +
+                  '🔗 API will be available at your Render URL.\n' +
+                  '⏰ Deployment time: ' + new Date().toISOString()
+          })

@@ -1,0 +1,101 @@
+name: Deploy Frontend to Netlify
+
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+    
+    - name: Build site
+      run: |
+        echo "🏗️ Building frontend..."
+        
+        # Create build directory
+        mkdir -p dist
+        
+        # Copy public files to dist
+        cp -r public/* dist/ 2>/dev/null || true
+        cp -r assets dist/ 2>/dev/null || true
+        
+        # Copy main files if they exist
+        cp *.html dist/ 2>/dev/null || true
+        cp *.css dist/ 2>/dev/null || true
+        cp *.js dist/ 2>/dev/null || true
+        
+        # Create index.html if not exists
+        if [ ! -f dist/index.html ]; then
+          cat > dist/index.html << 'EOF'
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>SPA Booking System - BAOHOTRAN</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 40px; }
+                .header { text-align: center; color: #2c3e50; }
+                .services { margin: 20px 0; }
+                .service-card { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px; }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>🌸 SPA Booking System</h1>
+                <p>Welcome to our luxury spa booking system</p>
+                <p>Developed by BAOHOTRAN</p>
+            </div>
+            
+            <div class="services">
+                <h2>Our Services</h2>
+                <div class="service-card">
+                    <h3>Massage Therapy</h3>
+                    <p>Price: $80 - Duration: 60 min</p>
+                </div>
+                <div class="service-card">
+                    <h3>Facial Treatment</h3>
+                    <p>Price: $60 - Duration: 45 min</p>
+                </div>
+                <div class="service-card">
+                    <h3>Body Wrap</h3>
+                    <p>Price: $100 - Duration: 90 min</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        EOF
+        fi
+        
+        # Create _redirects file for SPA routing
+        echo "/*    /index.html   200" > dist/_redirects
+        
+        # Create robots.txt
+        echo "User-agent: *" > dist/robots.txt
+        echo "Allow: /" >> dist/robots.txt
+        
+        echo "✅ Build completed"
+        ls -la dist/
+    
+    - name: Deploy to Netlify
+      uses: nwtgck/actions-netlify@v2.0
+      with:
+        publish-dir: './dist'
+        production-branch: main
+        deploy-message: "Deploy from GitHub Actions - ${{ github.sha }}"
+        enable-pull-request-comment: false
+        enable-commit-comment: true
+        overwrites-pull-request-comment: true
+      env:
+        NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
