@@ -60,16 +60,8 @@ jobs:
         echo "📁 Files in dist:"
         ls -la dist/
     
-    - name: Deploy to Netlify
-      uses: nwtgck/actions-netlify@v2.0
-      with:
-        publish-dir: './dist'
-        production-branch: main
-        deploy-message: "Deploy from GitHub Actions - ${{ github.sha }}"
-        enable-pull-request-comment: false
-        enable-commit-comment: true
-        overwrites-pull-request-comment: true
-      env:
-        NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    - name: Build completed
+      run: |
+        echo "✅ Build completed successfully!"
+        echo "🚀 Netlify will auto-deploy from GitHub integration"
+        echo "📊 Check Netlify dashboard for deployment status"
