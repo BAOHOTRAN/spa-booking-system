@@ -1,8 +1,18 @@
 name: Deploy Frontend to Netlify
 
 on:
+  # Manual trigger only
+  workflow_dispatch:
+    inputs:
+      deploy_message:
+        description: 'Deploy message'
+        required: false
+        default: 'Manual deployment'
+  
+  # Or deploy on tags only
   push:
-    branches: [ main, master ]
+    tags:
+      - 'v*'
 
 jobs:
   deploy:

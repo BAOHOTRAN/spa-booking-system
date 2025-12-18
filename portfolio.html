@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BAOHOTRAN - Portfolio</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .portfolio-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+        }
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        .project-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        .project-card:hover {
+            transform: translateY(-5px);
+        }
+        .project-title {
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .project-description {
+            color: #6c757d;
+            margin-bottom: 15px;
+        }
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .tech-badge {
+            background: #e9ecef;
+            color: #495057;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        .project-links {
+            display: flex;
+            gap: 10px;
+        }
+        .btn-project {
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .btn-github {
+            background: #24292e;
+            color: white;
+        }
+        .btn-github:hover {
+            background: #1a1e22;
+            color: white;
+        }
+        .btn-demo {
+            background: #28a745;
+            color: white;
+        }
+        .btn-demo:hover {
+            background: #218838;
+            color: white;
+        }
+        .loading {
+            text-align: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="portfolio-container">
+        <div class="header">
+            <h1>🚀 BAOHOTRAN Portfolio</h1>
+            <p>Full-Stack Developer | tqbao200468@gmail.com</p>
+        </div>
+
+        <div id="loading" class="loading">
+            <div class="spinner-border text-light" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p>Đang tải danh sách project từ GitHub...</p>
+        </div>
+
+        <div id="projects-container" style="display: none;">
+            <!-- Projects will be loaded here -->
+        </div>
+    </div>
+
+    <script>
+        async function loadGitHubProjects() {
+            try {
+                const response = await fetch('https://api.github.com/users/BAOHOTRAN/repos?sort=updated&per_page=50');
+                const repos = await response.json();
+                
+                const projectsContainer = document.getElementById('projects-container');
+                const loading = document.getElementById('loading');
+                
+                if (repos.length === 0) {
+                    projectsContainer.innerHTML = '<p class="text-center text-white">Không tìm thấy repository nào.</p>';
+                } else {
+                    projectsContainer.innerHTML = repos.map(repo => `
+                        <div class="project-card">
+                            <h3 class="project-title">${repo.name}</h3>
+                            <p class="project-description">
+                                ${repo.description || 'Không có mô tả'}
+                            </p>
+                            <div class="tech-stack">
+                                ${repo.language ? `<span class="tech-badge">${repo.language}</span>` : ''}
+                                ${repo.topics ? repo.topics.map(topic => `<span class="tech-badge">${topic}</span>`).join('') : ''}
+                            </div>
+                            <div class="project-info mb-3">
+                                <small class="text-muted">
+                                    ⭐ ${repo.stargazers_count} stars | 
+                                    🍴 ${repo.forks_count} forks | 
+                                    📅 Updated: ${new Date(repo.updated_at).toLocaleDateString('vi-VN')}
+                                </small>
+                            </div>
+                            <div class="project-links">
+                                <a href="${repo.html_url}" target="_blank" class="btn-project btn-github">
+                                    📂 GitHub
+                                </a>
+                                ${repo.homepage ? `
+                                    <a href="${repo.homepage}" target="_blank" class="btn-project btn-demo">
+                                        🌐 Live Demo
+                                    </a>
+                                ` : ''}
+                                ${repo.name.includes('spa-booking') ? `
+                                    <a href="https://spa-booking-system.netlify.app" target="_blank" class="btn-project btn-demo">
+                                        🌐 Live Demo
+                                    </a>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `).join('');
+                }
+                
+                loading.style.display = 'none';
+                projectsContainer.style.display = 'block';
+                
+            } catch (error) {
+                console.error('Error loading GitHub projects:', error);
+                document.getElementById('loading').innerHTML = `
+                    <p class="text-danger">❌ Lỗi khi tải danh sách project: ${error.message}</p>
+                `;
+            }
+        }
+
+        // Load projects when page loads
+        window.addEventListener('load', loadGitHubProjects);
+    </script>
+</body>
+</html>
