@@ -21,16 +21,28 @@ jobs:
       run: |
         echo "🏗️ Building Netlify full-stack application..."
         
-        # Ensure dist directory exists (already has index.html)
-        ls -la dist/
+        # Create dist directory
+        mkdir -p dist
         
-        # Copy Netlify functions
-        echo "📦 Copying Netlify functions..."
-        ls -la netlify/functions/
+        # Copy original SPA website files
+        echo "📦 Copying original SPA website..."
+        cp -r public/* dist/ 2>/dev/null || echo "No public folder"
+        cp -r assets dist/ 2>/dev/null || echo "No assets folder"
         
-        # Copy assets if they exist
-        cp -r assets dist/ 2>/dev/null || echo "No assets folder found"
-        cp -r public/* dist/ 2>/dev/null || echo "No public folder found"
+        # Rename index.php to index.html for static hosting
+        if [ -f dist/index.php ]; then
+          mv dist/index.php dist/index.html
+          echo "✅ Converted index.php to index.html"
+        fi
+        
+        # Convert other PHP files to HTML (basic conversion)
+        for file in dist/*.php; do
+          if [ -f "$file" ]; then
+            newname="${file%.php}.html"
+            mv "$file" "$newname"
+            echo "✅ Converted $(basename $file) to $(basename $newname)"
+          fi
+        done
         
         # Create _redirects file for SPA routing and API
         echo "# API redirects" > dist/_redirects
@@ -47,8 +59,6 @@ jobs:
         echo "✅ Netlify full-stack build completed"
         echo "📁 Files in dist:"
         ls -la dist/
-        echo "🔧 Functions:"
-        ls -la netlify/functions/
     
     - name: Deploy to Netlify
       uses: nwtgck/actions-netlify@v2.0
